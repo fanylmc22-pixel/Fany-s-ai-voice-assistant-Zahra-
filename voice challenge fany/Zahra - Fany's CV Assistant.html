@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Zahra — Fany's CV Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="cv-data.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  :root{
+    --accent: #c01a62;
+    --accent-soft: #fbe2ec;
+    --ink: #4f494b;
+    --ink-strong: #57494e;
+    --muted: #94888c;
+    --card: #ffffff;
+    --line: rgba(120,90,100,.10);
+  }
+  body{
+    font-family: 'Poppins', system-ui, sans-serif;
+    background: #e9e4e6;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+  }
+  /* Phone shell */
+  .stage{ min-height:100vh; width:100%; display:flex; align-items:center; justify-content:center; padding: 0; }
+  .phone{
+    position: relative;
+    width: 393px; height: 852px;
+    max-height: 100vh;
+    background: linear-gradient(180deg,#f9dde7 0%, #fdf4f1 26%, #fdf6f3 58%, #f8dae5 100%);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    box-shadow: 0 30px 80px rgba(120,40,70,.18);
+  }
+  @media (min-width: 460px){
+    .phone{ border-radius: 42px; height: 852px; }
+  }
+
+  /* Header */
+  .hdr{
+    flex: 0 0 auto;
+    display: grid; grid-template-columns: 44px 1fr 44px; align-items: center;
+    padding: 14px 18px 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.30));
+    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(6px);
+  }
+  .hdr-title{ text-align:center; font-weight:600; font-size:19px; color:#5b5052; letter-spacing:.2px; }
+  .icon-btn{
+    width:44px; height:44px; border:none; background:transparent; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; color:#6a5f62; border-radius:14px;
+  }
+  .icon-btn:active{ background: rgba(0,0,0,.04); }
+  .avatar{ width:42px; height:42px; border-radius:50%; object-fit:cover; box-shadow: 0 0 0 2px #fff, 0 2px 8px rgba(160,60,100,.25); }
+
+  /* Scroll body */
+  .body{ flex:1 1 auto; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling: touch; }
+  .body::-webkit-scrollbar{ width:0; }
+
+  /* HOME */
+  .home{ padding: 26px 26px 8px; display:flex; flex-direction:column; align-items:center; }
+  .pill-status{
+    display:inline-flex; align-items:center; gap:9px;
+    background: var(--accent-soft); color:#7a4357;
+    padding: 9px 18px; border-radius:999px; font-weight:600; font-size:14.5px;
+    margin-bottom: 22px;
+  }
+  .dot{ width:9px; height:9px; border-radius:50%; background: var(--accent); box-shadow:0 0 0 0 rgba(192,26,98,.5); animation: dotpulse 1.8s infinite; }
+  @keyframes dotpulse{ 0%{box-shadow:0 0 0 0 rgba(192,26,98,.45);} 70%{box-shadow:0 0 0 8px rgba(192,26,98,0);} 100%{box-shadow:0 0 0 0 rgba(192,26,98,0);} }
+
+  .greet{ text-align:center; font-weight:700; font-size:30px; line-height:1.18; color:#5c5052; margin:0 0 4px; letter-spacing:-.3px; }
+  .greet .q{ color: var(--accent); }
+  .greet-sub{ text-align:center; font-weight:400; font-size:16px; line-height:1.4; color:#9a8d91; margin: 14px 6px 0; }
+
+  /* Voice card */
+  .vcard{
+    width:100%; background: var(--card); border-radius:30px; margin-top: 26px;
+    box-shadow: 0 18px 44px rgba(150,70,100,.10), 0 2px 6px rgba(150,70,100,.05);
+    padding: 26px 22px 22px; display:flex; flex-direction:column; align-items:center;
+    min-height: 270px; justify-content: space-between;
+  }
+  /* Orb */
+  .orb-wrap{ position:relative; width:128px; height:128px; display:flex; align-items:center; justify-content:center; margin: 8px 0 6px; }
+  .orb{
+    width:88px; height:88px; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #f6a7c6, #d23f80 70%, #c01a62);
+    display:flex; align-items:center; justify-content:center; color:#fff; border:none; cursor:pointer;
+    box-shadow: 0 10px 24px rgba(192,26,98,.35);
+    transition: transform .15s ease;
+  }
+  .orb:active{ transform: scale(.94); }
+  .ring{ position:absolute; border-radius:50%; border:2px solid rgba(192,26,98,.25); inset:0; opacity:0; pointer-events:none; }
+  .orb{ position:relative; z-index:1; }
+  .listening .ring.r1{ animation: ripple 2.2s ease-out infinite; }
+  .listening .ring.r2{ animation: ripple 2.2s ease-out infinite .7s; }
+  .listening .ring.r3{ animation: ripple 2.2s ease-out infinite 1.4s; }
+  @keyframes ripple{ 0%{ transform:scale(.6); opacity:.7;} 100%{ transform:scale(1.5); opacity:0;} }
+  .orb-hint{ font-size:13.5px; color:#a4969a; font-weight:500; margin-top:2px; height:18px; }
+  .orb-wrap.busy .orb{ animation: orbpulse 1.6s ease-in-out infinite; }
+  @keyframes orbpulse{ 0%,100%{ transform:scale(1); box-shadow:0 10px 24px rgba(192,26,98,.35);} 50%{ transform:scale(1.06); box-shadow:0 14px 30px rgba(192,26,98,.5);} }
+  .orb.speaking{ background: radial-gradient(circle at 35% 30%, #fbb9d2, #c01a62 70%, #9c1551); }
+  .orb-typing{ display:flex; gap:5px; }
+  .orb-typing span{ width:9px; height:9px; border-radius:50%; background:#fff; animation: bounce 1.2s infinite; }
+  .orb-typing span:nth-child(2){ animation-delay:.18s; } .orb-typing span:nth-child(3){ animation-delay:.36s; }
+  .orb-heard{ font-size:14px; color:#7a6e72; font-weight:500; margin-top:8px; text-align:center; font-style:italic; max-width:90%; line-height:1.4; }
+
+  /* Language toggle */
+  .lang{
+    display:flex; background:#efe7ea; border-radius:999px; padding:5px; gap:4px; align-self:center;
+  }
+  .lang button{
+    border:none; background:transparent; cursor:pointer; font-family:inherit;
+    padding:11px 30px; border-radius:999px; font-size:16px; font-weight:500; color:#6f6468;
+    transition: all .18s ease;
+  }
+  .lang button.on{ background:#fff; color:#4f494b; box-shadow:0 2px 6px rgba(120,80,90,.16); font-weight:600; }
+
+  /* Suggestion chips */
+  .chips{ width:100%; display:flex; flex-wrap:wrap; gap:14px; justify-content:center; margin-top:28px; }
+  .chip{
+    border:none; background:#fff; cursor:pointer; font-family:inherit;
+    padding:16px 22px; border-radius:18px; font-size:15.5px; font-weight:500; color:#5c5052;
+    box-shadow: 0 6px 16px rgba(150,80,110,.10); transition: transform .12s ease, box-shadow .12s ease;
+    text-align:left; flex: 1 1 auto;
+  }
+  .chip:active{ transform: translateY(1px); box-shadow:0 3px 10px rgba(150,80,110,.12); }
+  .chip.wide{ flex-basis:100%; text-align:center; max-width: 78%; margin:0 auto; }
+
+  /* CHAT */
+  .chat{ padding: 18px 18px 12px; display:flex; flex-direction:column; gap:14px; min-height:100%; }
+  .newchat{
+    align-self:center; display:inline-flex; align-items:center; gap:7px; cursor:pointer;
+    border:none; background: var(--accent-soft); color:#7a4357; font-family:inherit; font-weight:600;
+    font-size:13.5px; padding:8px 16px; border-radius:999px; margin-bottom:2px;
+  }
+  .msg{ display:flex; gap:10px; max-width:100%; }
+  .msg.u{ justify-content:flex-end; }
+  .bubble{ padding:13px 16px; border-radius:20px; font-size:15px; line-height:1.5; max-width:80%; white-space:pre-wrap; }
+  .msg.z .bubble{ background:#fff; color:#4f494b; border-bottom-left-radius:7px; box-shadow:0 4px 14px rgba(150,80,110,.09); }
+  .msg.u .bubble{ background: linear-gradient(135deg,#d23f80,#c01a62); color:#fff; border-bottom-right-radius:7px; box-shadow:0 6px 16px rgba(192,26,98,.25); }
+  .msg.z .av{ flex:0 0 auto; width:32px; height:32px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 1.5px #fff; align-self:flex-end; }
+  .speak-btn{ display:inline-flex; align-items:center; justify-content:center; vertical-align:middle; margin-left:8px;
+    width:26px; height:26px; border:none; border-radius:50%; cursor:pointer; background:var(--accent-soft); color:var(--accent);
+    transform:translateY(3px); transition:transform .12s ease; }
+  .speak-btn:active{ transform:translateY(3px) scale(.9); }
+  .typing{ display:flex; gap:5px; padding:15px 16px; }
+  .typing span{ width:8px; height:8px; border-radius:50%; background:#d9a9bd; animation: bounce 1.2s infinite; }
+  .typing span:nth-child(2){ animation-delay:.18s; } .typing span:nth-child(3){ animation-delay:.36s; }
+  @keyframes bounce{ 0%,60%,100%{ transform:translateY(0); opacity:.5;} 30%{ transform:translateY(-5px); opacity:1;} }
+
+  /* Input bar */
+  .inputbar{
+    flex:0 0 auto; display:flex; align-items:center; gap:10px; padding: 10px 16px 12px;
+    background: linear-gradient(180deg, rgba(253,246,243,0), rgba(253,246,243,.95) 30%);
+  }
+  .field{
+    flex:1 1 auto; min-width:0; display:flex; align-items:center; background:#fff; border-radius:999px;
+    padding: 6px 6px 6px 18px; box-shadow:0 4px 16px rgba(150,80,110,.10); border:1px solid var(--line);
+  }
+  .field input{ flex:1; border:none; outline:none; background:transparent; font-family:inherit; font-size:15px; color:#4f494b; min-width:0; }
+  .field input::placeholder{ color:#b7a9ad; }
+  .send{
+    flex:0 0 auto; width:40px; height:40px; border-radius:50%; border:none; cursor:pointer;
+    background: linear-gradient(135deg,#d23f80,#c01a62); color:#fff; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 12px rgba(192,26,98,.3); transition: transform .12s ease, opacity .2s;
+  }
+  .send:active{ transform: scale(.92); }
+  .send:disabled{ opacity:.4; cursor:default; }
+  .mic{
+    flex:0 0 auto; width:48px; height:48px; border-radius:50%; border:none; cursor:pointer;
+    background: radial-gradient(circle at 35% 30%, #f6a7c6, #d23f80 68%, #c01a62);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 18px rgba(192,26,98,.38), 0 0 0 6px rgba(214,63,128,.10);
+    transition: transform .15s ease; position:relative;
+  }
+  .mic:active{ transform: scale(.92); }
+  .mic svg{ width:22px; height:22px; }
+  .mic.live{ background: radial-gradient(circle at 35% 30%, #fbb9d2, #c01a62 70%, #9c1551); }
+  .mic.live::after{ content:''; position:absolute; inset:-5px; border-radius:50%; border:2px solid rgba(192,26,98,.45); animation: ripple 1.6s ease-out infinite; }
+
+  /* Bottom nav */
+  .nav{
+    flex:0 0 auto; display:grid; grid-template-columns: repeat(4,1fr);
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 4px));
+    background: rgba(253,246,243,.92); border-top:1px solid var(--line); backdrop-filter: blur(8px);
+  }
+  .nav button{
+    border:none; background:transparent; cursor:pointer; font-family:inherit;
+    display:flex; flex-direction:column; align-items:center; gap:4px; padding:8px 0 4px; color:#9b9094; font-size:12px; font-weight:500;
+  }
+  .nav button.on{ color: var(--accent); }
+  .nav .ico{ width:24px; height:24px; }
+
+  /* Empty / screen states */
+  .empty{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 30px; gap:16px; color:#9a8d91; }
+  .empty-av{ width:64px; height:64px; border-radius:50%; object-fit:cover; box-shadow:0 0 0 2px #fff, 0 6px 18px rgba(160,60,100,.2); }
+  .empty p{ font-size:15.5px; line-height:1.5; margin:0; max-width:240px; }
+  .empty-cta{ border:none; cursor:pointer; font-family:inherit; font-weight:600; font-size:14.5px; color:#fff; padding:12px 24px; border-radius:999px; background:linear-gradient(135deg,#d23f80,#c01a62); box-shadow:0 6px 16px rgba(192,26,98,.28); }
+  .empty-cta:active{ transform:translateY(1px); }
+
+  .screen{ padding:24px 22px 16px; }
+  .screen-title{ font-size:22px; font-weight:700; color:#5c5052; margin:6px 2px 18px; }
+  .screen-empty{ color:#9a8d91; font-size:15px; line-height:1.5; padding:10px 2px; }
+  .hist-list{ display:flex; flex-direction:column; gap:12px; }
+  .hist-item{ display:flex; align-items:center; gap:12px; text-align:left; border:none; cursor:pointer; font-family:inherit;
+    background:#fff; color:#5c5052; font-size:15px; font-weight:500; padding:15px 18px; border-radius:18px;
+    box-shadow:0 6px 16px rgba(150,80,110,.09); transition:transform .12s ease; }
+  .hist-item:active{ transform:translateY(1px); }
+  .hist-item svg{ flex:0 0 auto; color:var(--accent); }
+  .hist-item span{ flex:1; }
+
+  .set-group{ background:#fff; border-radius:20px; padding:18px 18px 20px; margin-bottom:16px; box-shadow:0 6px 16px rgba(150,80,110,.08); }
+  .set-label{ font-size:13px; font-weight:600; color:#a4969a; text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px; }
+  .set-group .lang{ align-self:stretch; }
+  .set-about{ margin:0; font-size:15px; line-height:1.55; color:#6c6164; }
+  .set-clear{ width:100%; border:none; cursor:pointer; font-family:inherit; font-weight:600; font-size:15px;
+    color:var(--accent); background:var(--accent-soft); padding:15px; border-radius:16px; }
+  .set-clear:active{ transform:translateY(1px); }
+
+  .toast{ position:absolute; left:50%; bottom:96px; transform:translateX(-50%);
+    background:#57494e; color:#fff; padding:10px 16px; border-radius:12px; font-size:13px; font-weight:500;
+    box-shadow:0 8px 24px rgba(0,0,0,.2); opacity:0; pointer-events:none; transition:opacity .25s; max-width:80%; text-align:center;
+  }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useRef, useEffect, useCallback } = React;
+
+/* ---------- Localized strings ---------- */
+const STR = {
+  en: {
+    title: "Zahra",
+    status: "Active Listening",
+    greet1: "I am Zahra, Fany's assistant,",
+    greetQ: "how can I help you?",
+    sub: "Ask me anything about Fany's career, skills or experience.",
+    tapTalk: "Tap to talk",
+    listening: "Listening…",
+    thinking: "Thinking…",
+    speaking: "Speaking…",
+    tapStop: "Tap to stop",
+    placeholder: "Ask about Fany's CV…",
+    newChat: "New question",
+    chips: [
+      "What is Fany's current role?",
+      "What are her key skills?",
+      "Tell me about her experience",
+    ],
+    nav: ["Chat", "Voice", "History", "Settings"],
+    speechErr: "Voice input isn't available here — please type instead.",
+    answerErr: "Sorry, I couldn't reach my knowledge right now. Please try again.",
+    chatEmpty: "Ask Zahra a question to start the conversation.",
+    chatEmptyCta: "Go to Voice",
+    historyTitle: "Your questions",
+    historyEmpty: "No questions yet. Ask Zahra about Fany!",
+    settingsTitle: "Settings",
+    settingsLang: "Response language",
+    settingsAboutTitle: "About Zahra",
+    settingsAbout: "Zahra answers questions about Fany Louis-Mondésir's CV and career.",
+    clear: "Clear conversation",
+    cleared: "Conversation cleared",
+    micDenied: "Microphone blocked. Allow mic access in your browser, then tap the mic again.",
+    noSpeech: "I didn't catch that — tap the mic and speak again.",
+    micStart: "Speak now…",
+  },
+  fr: {
+    title: "Zahra",
+    status: "Écoute active",
+    greet1: "Je suis Zahra, l'assistante de Fany,",
+    greetQ: "comment puis-je vous aider ?",
+    sub: "Posez-moi vos questions sur le parcours, les compétences ou l'expérience de Fany.",
+    tapTalk: "Appuyez pour parler",
+    listening: "Écoute…",
+    thinking: "Je réfléchis…",
+    speaking: "Je réponds…",
+    tapStop: "Appuyez pour arrêter",
+    placeholder: "Une question sur le CV de Fany…",
+    newChat: "Nouvelle question",
+    chips: [
+      "Quel est le poste actuel de Fany ?",
+      "Quelles sont ses compétences clés ?",
+      "Parlez-moi de son expérience",
+    ],
+    nav: ["Chat", "Voix", "Historique", "Réglages"],
+    speechErr: "La saisie vocale n'est pas disponible ici — écrivez votre question.",
+    answerErr: "Désolée, je n'ai pas pu accéder à mes informations. Réessayez.",
+    chatEmpty: "Posez une question à Zahra pour démarrer la conversation.",
+    chatEmptyCta: "Aller à Voix",
+    historyTitle: "Vos questions",
+    historyEmpty: "Aucune question pour l'instant. Interrogez Zahra sur Fany !",
+    settingsTitle: "Réglages",
+    settingsLang: "Langue des réponses",
+    settingsAboutTitle: "À propos de Zahra",
+    settingsAbout: "Zahra répond aux questions sur le CV et le parcours de Fany Louis-Mondésir.",
+    clear: "Effacer la conversation",
+    cleared: "Conversation effacée",
+    micDenied: "Micro bloqué. Autorisez l'accès au micro dans le navigateur, puis réappuyez.",
+    noSpeech: "Je n'ai rien entendu — appuyez sur le micro et reparlez.",
+    micStart: "Parlez maintenant…",
+  },
+};
+
+/* ---------- Icons ---------- */
+const Ico = {
+  translate: () => (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 5h7M7.5 5v1.5c0 3-2 6-4.5 7.5"/><path d="M5 9c.8 2.2 2.6 4 5 5"/>
+      <path d="M12.5 20l3.5-9 3.5 9M14 16.5h4"/>
+    </svg>
+  ),
+  chat: () => (<svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.3A8 8 0 1 1 21 12z"/></svg>),
+  mic: () => (<svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>),
+  history: () => (<svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v3.5h3.5M12 8v4l3 2"/></svg>),
+  settings: () => (<svg className="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 2.6 14H2.5a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 7.4l-.1-.1A2 2 0 1 1 7.3 4.5l.1.1A1.6 1.6 0 0 0 9 4.6h.1A1.6 1.6 0 0 0 10 2.6V2.5a2 2 0 1 1 4 0v.1A1.6 1.6 0 0 0 17 4.6a1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1A1.6 1.6 0 0 0 21.4 10h.1a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>),
+  send: () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>),
+};
+
+const AVATAR = "fany-avatar.png";
+
+/* Render light markdown (**bold**) safely, strip stray markers */
+function fmt(text){
+  const clean = (text || "").replace(/^\s*[-*]\s+/gm, "• ").replace(/#{1,6}\s*/g, "");
+  const parts = clean.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((p, i) => {
+    const m = p.match(/^\*\*([^*]+)\*\*$/);
+    if(m) return <strong key={i}>{m[1]}</strong>;
+    return <React.Fragment key={i}>{p}</React.Fragment>;
+  });
+}
+
+/* ---------- Claude call ---------- */
+async function askZahra(question, lang, history){
+  // Offline / standalone fallback: the hosted AI helper isn't available outside the Claude environment.
+  if(!(window.claude && typeof window.claude.complete === "function")){
+    return lang === "fr"
+      ? "Je ne peux pas répondre dans cette version hors ligne : je n'ai pas accès au modèle d'IA. Ouvrez l'application dans l'environnement Claude pour me poser vos questions."
+      : "I can't answer in this offline version — I don't have access to the AI model here. Open the app inside the Claude environment to ask me questions.";
+  }
+  const langName = lang === "fr" ? "français" : "English";
+  const convo = history.slice(-6).map(m => `${m.role === "user" ? "Visitor" : "Zahra"}: ${m.text}`).join("\n");
+  const prompt =
+`You are Zahra, the warm and professional personal assistant of Fany Louis-Mondésir.
+Your only job is to answer questions about Fany's CV / professional profile, based STRICTLY on the information below.
+Speak in the first person as her assistant ("Fany has...", "She worked..."). Be concise (1–4 sentences unless a list is clearly asked for), friendly and confident.
+Write in plain conversational text. Do NOT use markdown, asterisks, bullets or headings.
+If a question is unrelated to Fany's career, gently steer back to her professional profile.
+If the info isn't in the CV, say you don't have that detail rather than inventing it.
+Always answer in ${langName}.
+
+=== FANY'S CV ===
+${window.FANY_CV}
+=== END CV ===
+
+${convo ? "Conversation so far:\n" + convo + "\n\n" : ""}Visitor's question: ${question}
+
+Zahra's answer (in ${langName}):`;
+
+  const res = await window.claude.complete({ messages: [{ role: "user", content: prompt }] });
+  return (res || "").trim();
+}
+
+/* ---------- App ---------- */
+function App(){
+  const [lang, setLang] = useState("en");
+  const [tab, setTab] = useState("Voice"); // Voice | Chat | History | Settings
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [voiceState, setVoiceState] = useState("idle"); // idle | listening | thinking | speaking (Voice tab only)
+  const [heard, setHeard] = useState("");
+  const [toast, setToast] = useState("");
+  const t = STR[lang];
+  const bodyRef = useRef(null);
+  const recogRef = useRef(null);
+  const toastTimer = useRef(null);
+  const finalSentRef = useRef(false);
+  const lastTranscriptRef = useRef("");
+  const voicesRef = useRef([]);
+  const messagesRef = useRef([]);
+  useEffect(()=>{ messagesRef.current = messages; }, [messages]);
+
+  // Load TTS voices (they populate asynchronously in most browsers).
+  useEffect(()=>{
+    if(!("speechSynthesis" in window)) return;
+    const load = () => { voicesRef.current = window.speechSynthesis.getVoices() || []; };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { try{ window.speechSynthesis.onvoiceschanged = null; }catch(e){} };
+  }, []);
+
+  // Pick a soft, feminine voice for the chosen language.
+  const pickVoice = (langPref) => {
+    const voices = voicesRef.current.length ? voicesRef.current : (window.speechSynthesis.getVoices() || []);
+    const code = langPref === "fr" ? "fr" : "en";
+    const inLang = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(code));
+    if(!inLang.length) return null;
+    // Known soft / female voice names, most preferred first.
+    const female = langPref === "fr"
+      ? ["amélie","amelie","audrey","aurélie","aurelie","virginie","marie","julie","léa","lea","chloé","chloe","google français","hortense","céline","celine"]
+      : ["samantha","victoria","karen","moira","tessa","fiona","serena","allison","ava","susan","zira","aria","jenny","google us english","google uk english female","female"];
+    const male = ["thomas","nicolas","daniel","fred","alex","jacques","paul","rishi","arthur","male","homme"];
+    const byName = (kw) => inLang.find(v => kw.some(k => v.name.toLowerCase().includes(k)));
+    return byName(female)
+      || inLang.find(v => !male.some(k => v.name.toLowerCase().includes(k)))
+      || inLang[0];
+  };
+
+  const speak = (text, onend) => {
+    try{
+      if(!("speechSynthesis" in window)){ if(onend) onend(); return; }
+      window.speechSynthesis.cancel();
+      const clean = (text || "").replace(/\*\*/g, "").replace(/[#*_`>]/g, "");
+      const u = new SpeechSynthesisUtterance(clean);
+      u.lang = lang === "fr" ? "fr-FR" : "en-US";
+      const v = pickVoice(lang);
+      if(v) u.voice = v;
+      u.rate = 0.95;   // a touch slower = calmer
+      u.pitch = 1.15;  // slightly higher = softer, feminine
+      u.volume = 1;
+      if(onend){ u.onend = onend; u.onerror = onend; }
+      window.speechSynthesis.speak(u);
+    }catch(e){ if(onend) onend(); }
+  };
+
+  const showToast = (msg) => {
+    setToast(msg); clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(()=> setToast(""), 3200);
+  };
+
+  useEffect(()=>{
+    if(tab === "Chat" && bodyRef.current){
+      bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+    }
+  }, [messages, loading, tab]);
+
+  const send = useCallback(async (textArg, opts) => {
+    const text = (textArg ?? input).trim();
+    if(!text || loading) return;
+    const spoken = !!(opts && opts.spoken);
+    try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
+    setInput("");
+    setTab("Chat");
+    const userMsg = { role: "user", text };
+    setMessages(prev => {
+      const next = [...prev, userMsg];
+      runAnswer(text, next, spoken);
+      return next;
+    });
+  }, [input, loading, lang]);
+
+  const runAnswer = async (text, historyIncludingUser, spoken) => {
+    setLoading(true);
+    try{
+      const ans = await askZahra(text, lang, historyIncludingUser.slice(0, -1).concat([{role:"user", text}]));
+      const finalAns = ans || t.answerErr;
+      setMessages(prev => [...prev, { role: "zahra", text: finalAns }]);
+      if(spoken) speak(finalAns);
+    }catch(e){
+      setMessages(prev => [...prev, { role: "zahra", text: t.answerErr }]);
+    }finally{
+      setLoading(false);
+    }
+  };
+
+  // Voice-only flow (Voice tab): listen → think → speak the answer aloud. No text chat.
+  const runVoice = async (text) => {
+    setVoiceState("thinking");
+    setHeard(text);
+    const prior = messagesRef.current;
+    setMessages(prev => [...prev, { role: "user", text }]);
+    try{
+      const ans = await askZahra(text, lang, prior);
+      const finalAns = ans || t.answerErr;
+      setMessages(prev => [...prev, { role: "zahra", text: finalAns }]);
+      setVoiceState("speaking");
+      speak(finalAns, () => setVoiceState("idle"));
+    }catch(e){
+      setVoiceState("idle");
+      showToast(t.answerErr);
+    }
+  };
+
+  const startListening = (voiceOnly) => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ showToast(t.speechErr); return; }
+    if(listening){ try{ recogRef.current && recogRef.current.stop(); }catch(e){} setListening(false); return; }
+    try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
+    // Unlock speech synthesis inside the user gesture so the spoken reply isn't blocked later.
+    try{ if("speechSynthesis" in window){ const w = new SpeechSynthesisUtterance(" "); w.volume = 0; window.speechSynthesis.speak(w); } }catch(e){}
+    try{
+      const r = new SR();
+      r.lang = lang === "fr" ? "fr-FR" : "en-US";
+      r.interimResults = true;
+      r.continuous = false;
+      r.maxAlternatives = 1;
+      finalSentRef.current = false;
+      lastTranscriptRef.current = "";
+      const deliver = (txt) => { if(voiceOnly) runVoice(txt); else send(txt, { spoken: true }); };
+      r.onstart = () => { setListening(true); setInput(""); setHeard(""); if(voiceOnly) setVoiceState("listening"); };
+      r.onresult = (ev) => {
+        let interim = "", finalTxt = "";
+        for(let i = ev.resultIndex; i < ev.results.length; i++){
+          const res = ev.results[i];
+          if(res.isFinal) finalTxt += res[0].transcript;
+          else interim += res[0].transcript;
+        }
+        const current = (finalTxt || interim).trim();
+        if(current) lastTranscriptRef.current = current;
+        if(finalTxt.trim()){
+          finalSentRef.current = true;
+          setListening(false);
+          setInput("");
+          try{ r.stop(); }catch(e){}
+          deliver(finalTxt.trim());
+        } else if(interim){
+          if(voiceOnly) setHeard(interim); else setInput(interim);
+        }
+      };
+      r.onerror = (e) => {
+        setListening(false);
+        if(voiceOnly) setVoiceState("idle");
+        if(e.error === "not-allowed" || e.error === "service-not-allowed") showToast(t.micDenied);
+        else if(e.error === "no-speech") showToast(t.noSpeech);
+        else if(e.error === "aborted") { /* user stopped */ }
+        else showToast(t.speechErr);
+      };
+      r.onend = () => {
+        setListening(false);
+        // Fallback: some browsers never emit a final result — use the last interim text.
+        if(!finalSentRef.current && lastTranscriptRef.current.trim()){
+          finalSentRef.current = true;
+          deliver(lastTranscriptRef.current.trim());
+        } else if(!finalSentRef.current && voiceOnly){
+          setVoiceState("idle");
+        }
+      };
+      recogRef.current = r;
+      r.start();
+      setListening(true);
+      if(voiceOnly) setVoiceState("listening");
+    }catch(e){ setListening(false); if(voiceOnly) setVoiceState("idle"); showToast(t.speechErr); }
+  };
+
+  // Central orb on the Voice tab: tap to talk / tap to stop speaking.
+  const onOrbClick = () => {
+    if(voiceState === "thinking") return;
+    if(voiceState === "speaking"){ try{ window.speechSynthesis.cancel(); }catch(e){} setVoiceState("idle"); return; }
+    if(listening){ try{ recogRef.current && recogRef.current.stop(); }catch(e){} setListening(false); setVoiceState("idle"); return; }
+    startListening(true);
+  };
+
+  const resetHome = () => { setTab("Voice"); };
+  const clearConvo = () => { setMessages([]); showToast(t.cleared); };
+
+  return (
+    <div className="stage">
+      <div className={"phone" + (listening ? " listening" : "")}>
+        {/* Header */}
+        <header className="hdr">
+          <button className="icon-btn" onClick={()=> setLang(lang === "en" ? "fr" : "en")} aria-label="Language">
+            <Ico.translate/>
+          </button>
+          <div className="hdr-title">{t.title}</div>
+          <img className="avatar" src={AVATAR} alt="Fany" />
+        </header>
+
+        {/* Body */}
+        <div className="body" ref={bodyRef}>
+          {tab === "Voice" ? (
+            <div className="home">
+              <div className="pill-status"><span className="dot"></span>{t.status}</div>
+              <h1 className="greet">{t.greet1}<br/><span className="q">{t.greetQ}</span></h1>
+              <p className="greet-sub">{t.sub}</p>
+
+              <div className="vcard">
+                <div className={"orb-wrap" + (listening ? " listening" : "") + ((voiceState === "thinking" || voiceState === "speaking") ? " busy" : "")}>
+                  <span className="ring r1"></span><span className="ring r2"></span><span className="ring r3"></span>
+                  <button className={"orb" + (voiceState === "speaking" ? " speaking" : "")} onClick={onOrbClick} aria-label="Talk">
+                    {voiceState === "thinking" ? (
+                      <div className="orb-typing"><span></span><span></span><span></span></div>
+                    ) : voiceState === "speaking" ? (
+                      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M16 9a3.5 3.5 0 0 1 0 6M19 6a7 7 0 0 1 0 12"/></svg>
+                    ) : (
+                      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+                    )}
+                  </button>
+                </div>
+                <div className="orb-hint">{voiceState === "thinking" ? t.thinking : voiceState === "speaking" ? (t.speaking + " · " + t.tapStop) : listening ? t.listening : t.tapTalk}</div>
+                {heard && (voiceState === "thinking" || listening) && (
+                  <div className="orb-heard">“{heard}”</div>
+                )}
+                <div className="lang">
+                  <button className={lang==="en"?"on":""} onClick={()=> setLang("en")}>English</button>
+                  <button className={lang==="fr"?"on":""} onClick={()=> setLang("fr")}>Français</button>
+                </div>
+              </div>
+
+              <div className="chips">
+                <button className="chip" onClick={()=> runVoice(t.chips[0])}>{t.chips[0]}</button>
+                <button className="chip" onClick={()=> runVoice(t.chips[1])}>{t.chips[1]}</button>
+                <button className="chip wide" onClick={()=> runVoice(t.chips[2])}>{t.chips[2]}</button>
+              </div>
+            </div>
+          ) : tab === "Chat" ? (
+            <div className="chat">
+              {messages.length === 0 && !loading ? (
+                <div className="empty">
+                  <img className="empty-av" src={AVATAR} alt="Zahra"/>
+                  <p>{t.chatEmpty}</p>
+                  <button className="empty-cta" onClick={()=> setTab("Voice")}>{t.chatEmptyCta}</button>
+                </div>
+              ) : (
+              <React.Fragment>
+              <button className="newchat" onClick={resetHome}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                {t.newChat}
+              </button>
+              {messages.map((m, i) => (
+                <div key={i} className={"msg " + (m.role === "user" ? "u" : "z")}>
+                  {m.role !== "user" && <img className="av" src={AVATAR} alt="Zahra"/>}
+                  <div className="bubble">
+                    {fmt(m.text)}
+                    {m.role !== "user" && (
+                      <button className="speak-btn" onClick={()=> speak(m.text)} aria-label="Listen">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M16 9a3.5 3.5 0 0 1 0 6M19 6a7 7 0 0 1 0 12"/></svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {loading && (
+                <div className="msg z">
+                  <img className="av" src={AVATAR} alt="Zahra"/>
+                  <div className="bubble"><div className="typing"><span></span><span></span><span></span></div></div>
+                </div>
+              )}
+              </React.Fragment>
+              )}
+            </div>
+          ) : tab === "History" ? (
+            <div className="screen">
+              <h2 className="screen-title">{t.historyTitle}</h2>
+              {messages.filter(m=> m.role==="user").length === 0 ? (
+                <p className="screen-empty">{t.historyEmpty}</p>
+              ) : (
+                <div className="hist-list">
+                  {messages.filter(m=> m.role==="user").map((m,i)=> (
+                    <button key={i} className="hist-item" onClick={()=> send(m.text)}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v3.5h3.5M12 8v4l3 2"/></svg>
+                      <span>{m.text}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="screen">
+              <h2 className="screen-title">{t.settingsTitle}</h2>
+              <div className="set-group">
+                <div className="set-label">{t.settingsLang}</div>
+                <div className="lang">
+                  <button className={lang==="en"?"on":""} onClick={()=> setLang("en")}>English</button>
+                  <button className={lang==="fr"?"on":""} onClick={()=> setLang("fr")}>Français</button>
+                </div>
+              </div>
+              <div className="set-group">
+                <div className="set-label">{t.settingsAboutTitle}</div>
+                <p className="set-about">{t.settingsAbout}</p>
+              </div>
+              <button className="set-clear" onClick={clearConvo}>{t.clear}</button>
+            </div>
+          )}
+        </div>
+
+        {/* Input bar */}
+        {/* Input bar — only in the text Chat tab; the Voice tab is voice-only */}
+        {tab === "Chat" && (
+        <div className="inputbar">
+          <button className={"mic" + (listening ? " live" : "")} onClick={()=> startListening(false)} aria-label="Voice">
+            <Ico.mic/>
+          </button>
+          <div className="field">
+            <input
+              value={input}
+              placeholder={t.placeholder}
+              onChange={e=> setInput(e.target.value)}
+              onKeyDown={e=> { if(e.key === "Enter") send(); }}
+            />
+            <button className="send" disabled={!input.trim() || loading} onClick={()=> send()} aria-label="Send"><Ico.send/></button>
+          </div>
+        </div>
+        )}
+
+        {/* Bottom nav */}
+        <nav className="nav">
+          {[["Chat", Ico.chat], ["Voice", Ico.mic], ["History", Ico.history], ["Settings", Ico.settings]].map(([key, I], idx) => (
+            <button key={key} className={tab === key ? "on" : ""} onClick={()=> setTab(key)}>
+              <I/>
+              <span>{t.nav[idx]}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className={"toast" + (toast ? " show" : "")}>{toast}</div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
